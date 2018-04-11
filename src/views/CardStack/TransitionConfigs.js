@@ -68,21 +68,34 @@ function defaultTransitionConfig(
   // whether we're animating in/out a modal screen
   isModal
 ) {
-  if (Platform.OS === 'android') {
-    // Use the default Android animation no matter if the screen is a modal.
-    // Android doesn't have full-screen modals like iOS does, it has dialogs.
-    if (
-      prevTransitionProps &&
-      transitionProps.index < prevTransitionProps.index
-    ) {
-      // Navigating back to the previous screen
-      return FadeOutToBottomAndroid;
-    }
-    return FadeInFromBottomAndroid;
-  }
+  // if (Platform.OS === 'android') {
+  //   // Use the default Android animation no matter if the screen is a modal.
+  //   // Android doesn't have full-screen modals like iOS does, it has dialogs.
+  //   if (
+  //     prevTransitionProps &&
+  //     transitionProps.index < prevTransitionProps.index
+  //   ) {
+  //     // Navigating back to the previous screen
+  //     return FadeOutToBottomAndroid;
+  //   }
+  //   return FadeInFromBottomAndroid;
+  // }
   // iOS and other platforms
   if (isModal) {
-    return ModalSlideFromBottomIOS;
+    if (Platform.OS === 'android') {
+      // Use the default Android animation no matter if the screen is a modal.
+      // Android doesn't have full-screen modals like iOS does, it has dialogs.
+      if (
+        prevTransitionProps &&
+        transitionProps.index < prevTransitionProps.index
+      ) {
+        // Navigating back to the previous screen
+        return FadeOutToBottomAndroid;
+      }
+      return FadeInFromBottomAndroid;
+    } else {
+      return ModalSlideFromBottomIOS;
+    }
   }
   return SlideFromRightIOS;
 }

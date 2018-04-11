@@ -268,7 +268,7 @@ class CardStack extends React.Component {
       mode,
     } = this.props;
     const { index } = navigation.state;
-    const isVertical = mode === 'modal';
+    const isVertical = this._isModal();
     const { options } = this._getScreenDetails(scene);
     const gestureDirectionInverted = options.gestureDirection === 'inverted';
 
@@ -423,10 +423,36 @@ class CardStack extends React.Component {
     if (this.props.headerMode) {
       return this.props.headerMode;
     }
-    if (Platform.OS === 'android' || this.props.mode === 'modal') {
+    if (
+      this._isModal() ||
+      Platform.OS === 'android' ||
+      this.props.mode === 'modal'
+    ) {
       return 'screen';
     }
     return 'float';
+  }
+
+  /**
+   * Returns true if the screen should be animated vertically (iOS modal style).
+   * Considers "mode" option from navigator-level config and route-level navigationOptions.
+   * The current screen will be animated as modal if any of the "mode" options is set to "modal".
+   */
+  _isModal(): boolean {
+    const { mode, transitionProps } = this.props;
+    const { index, scene, scenes } = transitionProps;
+    // if the current scene index is not the last in the list
+    // considering current render is in context of back-navigation
+    // may be there is a better way to detect back navigation here?
+    const isBackNavigation = index < scenes.length - 1;
+    // when navigating back, we should ask modal mode from the scene we are leaving in order to match animation style
+    const animationDefinerScene = isBackNavigation
+      ? scenes[scenes.length - 1]
+      : scene;
+    const screenOptions = this._getScreenDetails(animationDefinerScene).options;
+    return screenOptions.mode
+      ? screenOptions.mode === 'modal'
+      : mode === 'modal';
   }
 
   _getHeaderTransitionPreset() {
@@ -472,13 +498,13 @@ class CardStack extends React.Component {
   }
 
   _getTransitionConfig = () => {
-    const isModal = this.props.mode === 'modal';
+    // const isModal = this.props.mode === 'modal';
 
     return TransitionConfigs.getTransitionConfig(
       this.props.transitionConfig,
       this.props.transitionProps,
       this.props.prevTransitionProps,
-      isModal
+      this._isModal()
     );
   };
 
